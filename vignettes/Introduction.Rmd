@@ -106,7 +106,6 @@ opt$optimize(inst)
 
 
 ```{r}
-
 devtools::load_all("../mlr3keras")
 devtools::load_all()
 library(mlr3)
@@ -120,8 +119,6 @@ c$param_set$values$layer_units = c(256, 256)
 c$param_set$values$use_embedding = FALSE
 c$param_set$values$keep_fraction = 1
 c$param_set$values$optimizer = keras::optimizer_sgd(lr=0.1, momentum=0.9)
-
-
 c$train(t)
 c$predict(t)$score()
 ```

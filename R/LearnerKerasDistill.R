@@ -173,7 +173,12 @@ LearnerRegrKerasDistill = R6::R6Class("LearnerRegrKerasDistill",
         ParamDbl$new("keep_fraction", lower = 0, upper = 1, default = 0.1, tags = c("train", "distill"))
       )))
       self$param_set$values = c(self$param_set$values, list(min_n = 1e4, switch_prob = 0.5, var = 2, alpha = 0, keep_fraction = 0.1))
-      self$param_set$values$callbacks = c(self$param_set$values$callbacks, mlr3keras::cb_es(patience=10L))
+      mlr3misc::insert_named(self$param_set$values$callbacks, list(
+        "callbacks" = c(self$param_set$values$callbacks, mlr3keras::cb_es(patience=10L)),
+        "layer_units" = c(256L, 256L),
+        "epochs" = 100L
+      ))
+
     }
   ),
   private = list(
