@@ -1,0 +1,145 @@
+---
+title: "Introduction"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Introduction}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r, include = FALSE}
+knitr::opts_chunk$set(
+  collapse = TRUE,
+  comment = "#>"
+)
+```
+
+```{r setup}
+library(mlr3)
+library(distillery)
+devtools::load_all()
+t = tsk("iris")
+dt = t$data()
+```
+
+```{r}
+t_art = gen_artificial_data(t)
+```
+
+```{r}
+# Compute IOU
+hyperbox = function(dt) {
+  dmat = sapply(dt, as.numeric)
+  box = apply(dmat, 2, function(x) {r = range(x); r[2] - r[1]})
+  box = Filter(function(x) x != 0, box)
+  vol = Reduce(`*`, box)
+  return(vol)
+}
+```
+
+```{r}
+# Measure quality:
+# fraction of non-missed points divided by relative increase in volume
+iou = function(t, n, var, switch_prob) {
+  ttr = t$clone()$filter(sample(t$row_ids, ceiling(0.6 * t$nrow)))
+  tte = t$clone()$filter(setdiff(t$row_ids, ttr$row_ids))
+  tta = gen_artificial_data(ttr, min_n = n, var = var, switch_prob = switch_prob)
+  miss = Reduce(`+`, pmap(list(tta$data(), tte$data()),
+    function(x, y) {
+      r = range(as.numeric(x)) # artificial data hyperbox
+      mean(as.numeric(y) < r[1] | as.numeric(y) > r[2])
+    }
+  ))
+  fts = tta$feature_names
+  vol = Reduce(`*`, pmap(list(tta$data(cols=fts), ttr$data(cols=fts)),
+    function(x, y) {
+      r1 = diff(range(as.numeric(x)))
+      r2 = diff(range(as.numeric(y)))
+      if(is.na(r1) || is.na(r2)) browser()
+      if (!r1 | !r2) return(1)
+      else return(r1 / r2)
+    }
+  ))
+  list(miss = miss, vol = vol)
+}
+
+iou(t, n = 500, var = 1, switch_prob = 0.1)
+iou(t, n = 500, var = .1, switch_prob = 0.8)
+
+```
+
+```{r}
+library(bbotk)
+library(paradox)
+
+ps = ParamSet$new(list(
+  ParamDbl$new("var", lower = 0, upper = 1000),
+  ParamDbl$new("switch_prob", lower = 0.01, upper = 1)
+))
+searchps = ParamSet$new(list(
+  ParamDbl$new("logvar", lower = -1, upper = 0.5),
+  ParamDbl$new("switch_prob", lower = 0.01, upper = 0.8)
+))
+searchps$trafo = function(x, param_set) {
+  x$var = 10^x$logvar
+  x$logvar = NULL
+  print(x)
+  return(x)
+}
+codomain = ParamSet$new(list(
+  ParamDbl$new("miss", tags = "minimize"),
+  ParamDbl$new("vol", tags = "minimize")
+))
+
+obj = ObjectiveRFun$new(function(xs) {
+  do.call(iou, c(list("t" = t, n = 1000), xs))
+  }, domain = ps, codomain = codomain)
+ter = trm("evals", n_evals=100)
+inst = OptimInstance$new(obj, searchps, ter)
+opt = OptimizerRandomSearch$new()
+opt$optimize(inst)
+
+```
+
+
+## Benchmark
+
+
+```{r}
+
+devtools::load_all("../mlr3keras")
+devtools::load_all()
+library(mlr3)
+library(mlr3learners)
+t = tsk("iris")
+l = lrn("classif.glmnet", predict_type = "prob")$train(t)
+c = LearnerClassifKerasDistill$new(l)
+c$param_set$values$epochs = 100
+c$param_set$values$min_n = 1000
+c$param_set$values$layer_units = c(256, 256)
+c$param_set$values$use_embedding = FALSE
+c$param_set$values$keep_fraction = 1
+c$param_set$values$optimizer = keras::optimizer_sgd(lr=0.1, momentum=0.9)
+
+
+c$train(t)
+c$predict(t)$score()
+```
+
+
+```{r}
+library(microbenchmark)
+microbenchmark(
+  c1 = {
+    c1 = c$clone()
+    c1$param_set$values$low_memory = TRUE
+    c1$train(t)
+  },
+  c2 = {
+    c2 = c$clone()
+    c2$param_set$values$low_memory = FALSE
+    c1$train(t)
+  },
+  times = 3L
+)
+```
