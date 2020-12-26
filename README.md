@@ -26,24 +26,31 @@ This can also be complete ML Pipelines and Ensembles!
 ```r
 library(mlr3)
 t = tsk("iris")
+t$set_row_role(sample(t$row_ids, 50), "validation")
 l = lrn("classif.rpart", predict_type = "prob")$train(t)
 ```
+
 we can evaluate the current learner on our `Task`.
 ```r
-l$predict(t)$score()
+l$predict(t, t$row_roles$validation)$score()
 ```
 
-Now we just cerate a `LearnerClassifKerasDistill` and train it on the `Task`.
+Now we just call `distill` on our trained learner and `distillery` automatically trains and tunes the Student Network.
 
 ```r
 library(distillery)
 library(mlr3keras)
-c = LearnerClassifKerasDistill$new(l)
-c$train(t)
+c = distill(l, t, budget = 1L)
 ```
 
 Et voila, we can get an equivalent model, this time compressed into a neural network.
 
 ```r
-c$predict(t)$score()
+c$predict(t, t$row_roles$validation)$score()
+```
+
+and look at the training trace:
+
+```r
+c$learner$plot()
 ```

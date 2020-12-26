@@ -2,6 +2,7 @@
 register_mlr3keras = function() {
   x = utils::getFromNamespace("keras_reflections", ns = "mlr3keras")
   x$loss$classif = unique(c(x$loss$classif, "mean_squared_error"))
+  mlr_measures$add("val_loss", MeasureValLoss, id = "val_loss", stages = "train")
 }
 
 .onLoad = function(libname, pkgname) {  # nocov start

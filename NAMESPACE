@@ -2,6 +2,8 @@
 
 export(LearnerClassifKerasDistill)
 export(LearnerRegrKerasDistill)
+export(MeasureValLoss)
+export(distill)
 export(gen_artificial_data)
 export(label_artificial_data_classif)
 export(label_artificial_data_regr)

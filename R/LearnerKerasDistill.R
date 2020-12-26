@@ -57,16 +57,21 @@ LearnerClassifKerasDistill = R6::R6Class("LearnerClassifKerasDistill",
       )))
       self$param_set$values = c(self$param_set$values, list(min_n = 1e4, switch_prob = 0.5, var = 2, probabilities = TRUE, alpha = 0, keep_fraction = 0.1))
       self$param_set$values$loss = "mean_squared_error"
+      self$param_set$values = mlr3misc::insert_named(self$param_set$values, list(
+        "callbacks" = c(self$param_set$values$callbacks, mlr3keras::cb_es(patience=3L)),
+        "layer_units" = c(32L, 32L),
+        "epochs" = 100L
+      ))
       if (self$teacher$predict_type == "prob")
         self$predict_type = "prob"
       self$architecture$transforms$y = function(y, pars, model_loss) y
   }),
   private = list(
-    #' @description
-    #' Internal training function, runs the distillation
-    #' @param task [`Task`] \cr
-    #'   Data the `teacher` was trained on
-    #' @return A list with slots 'model', 'history' and 'class_names'
+    # @description
+    # Internal training function, runs the distillation
+    # @param task [`Task`] \cr
+    #   Data the `teacher` was trained on
+    # @return A list with slots 'model', 'history' and 'class_names'
     .train = function(task) {
 
       distill_pars = self$param_set$get_values(tags = "distill")
@@ -183,11 +188,11 @@ LearnerRegrKerasDistill = R6::R6Class("LearnerRegrKerasDistill",
   ),
   private = list(
 
-    #' @description
-    #' Internal training function, runs the distillation
-    #' @param task [`Task`] \cr
-    #'   Data the `teacher` was trained on
-    #' @return A list with slots 'model', 'history'
+    # @description
+    # Internal training function, runs the distillation
+    # @param task [`Task`] \cr
+    #   Data the `teacher` was trained on
+    # @return A list with slots 'model', 'history'
     .train = function(task) {
       distill_pars = self$param_set$get_values(tags = "distill")
       pars = self$param_set$get_values(tags = "train")

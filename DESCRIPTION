@@ -24,6 +24,7 @@ Imports:
     mlr3learners,
     mlr3keras,
     mlr3pipelines,
+    mlr3tuning,
     Rcpp
 Suggests:
     testthat,
@@ -37,3 +38,13 @@ RoxygenNote: 7.1.1
 LinkingTo:
     Rcpp
 VignetteBuilder: knitr
+Collate:
+    'LearnerKerasDistill.R'
+    'MeasureValLoss.R'
+    'RcppExports.R'
+    'data_generator.R'
+    'distill.R'
+    'distillery-package.R'
+    'label_data.R'
+    'munge.R'
+    'zzz.R'

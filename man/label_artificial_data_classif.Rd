@@ -18,7 +18,7 @@ Predict probabilities instead of response? Default: True.}
 
 \item{alpha}{[`numeric`] \cr
 Specifies a convex-combination of labels predicted by the learner (alpha = 0)
-and labels of the observation before swapping. Default: 0.}
+and labels of the observation before swapping. Default: 0 (only learner predictions)}
 }
 \value{
 A [`matrix`] with nclasses cols and nobs rows containing probabilities.
