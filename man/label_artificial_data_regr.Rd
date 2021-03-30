@@ -13,7 +13,7 @@ Task to create labels for.}
 \item{teacher}{[`Learner`] \cr
 Trained learner to compress into a neural network.}
 
-\item{alpha}{[`numeric`] \¢r
+\item{alpha}{[`numeric`] \cr
 Specifies a convex-combination of labels predicted by the learner (alpha = 0)
 and labels of the observation before swapping.}
 }

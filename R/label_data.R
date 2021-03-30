@@ -46,7 +46,7 @@ label_artificial_data_classif = function(task, teacher, prob = TRUE, alpha = 0) 
 #' Task to create labels for.
 #' @param teacher [`Learner`] \cr
 #' Trained learner to compress into a neural network.
-#' @param alpha [`numeric`] \¢r
+#' @param alpha [`numeric`] \cr
 #' Specifies a convex-combination of labels predicted by the learner (alpha = 0)
 #' and labels of the observation before swapping.
 #'
