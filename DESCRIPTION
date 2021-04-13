@@ -1,4 +1,4 @@
-Package: distillery
+Package: distille
 Type: Package
 Title: Compress arbitrary mlr3 models into keras models
 Version: 0.0.0.9000
